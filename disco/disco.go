@@ -123,11 +123,17 @@ const MessageHeaderLen = 2
 // returned data slice is a subslice of all with just dataLen bytes of
 // where the caller will fill in the data.
 func appendMsgHeader(b []byte, t MessageType, ver uint8, dataLen int) (all, data []byte) {
-	// TODO: optimize this?
-	all = append(b, make([]byte, dataLen+2)...)
-	all[len(b)] = byte(t)
-	all[len(b)+1] = ver
-	data = all[len(b)+2:]
+	start := len(b)
+	total := start + 2 + dataLen
+	if cap(b) >= total {
+		all = b[:total]
+	} else {
+		all = make([]byte, total)
+		copy(all, b)
+	}
+	all[start] = byte(t)
+	all[start+1] = ver
+	data = all[start+2:]
 	return
 }
 
